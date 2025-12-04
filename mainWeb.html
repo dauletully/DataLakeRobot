@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>DataLake Robot</title>
+    <style>
+      :root {
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        color: #111;
+        background: #f5f5f5;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 40px 20px 80px;
+      }
+
+      .app {
+        width: min(1200px, 100%);
+      }
+
+      h1 {
+        font-size: 22px;
+        margin: 0 0 24px;
+      }
+
+      .view {
+        display: none;
+        animation: fade 0.2s ease;
+      }
+
+      .view.active {
+        display: block;
+      }
+
+      @keyframes fade {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 32px 48px;
+        justify-items: center;
+      }
+
+      .card {
+        width: 160px;
+        height: 150px;
+        background: #dcdcdc;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        border-radius: 4px;
+        text-align: center;
+      }
+
+      .primary-btn {
+        border: none;
+        background: #8bf149;
+        color: #000;
+        padding: 6px 28px;
+        font-weight: 600;
+        border-radius: 2px;
+        cursor: pointer;
+        transition: transform 0.1s ease;
+      }
+
+      .primary-btn:active {
+        transform: scale(0.97);
+      }
+
+      .table-wrapper {
+        background: #fff;
+        border-radius: 6px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+      }
+
+      .table-header,
+      .rule-row,
+      .history-row {
+        display: grid;
+        grid-template-columns: 2fr 2fr auto;
+        align-items: center;
+        padding: 18px 26px;
+        gap: 16px;
+      }
+
+      .history-row {
+        grid-template-columns: 2fr 2fr 2fr 1fr 1fr;
+      }
+
+      .table-header {
+        background: #dcdcdc;
+        font-weight: 600;
+      }
+
+      .divider {
+        height: 1px;
+        background: #bcbcbc;
+        margin: 0 26px;
+      }
+
+      .rule-row {
+        position: relative;
+        cursor: pointer;
+        transition: background 0.15s ease;
+      }
+
+      .rule-row:hover {
+        background: rgba(0, 0, 0, 0.04);
+      }
+
+      .row-actions {
+        justify-self: end;
+        position: relative;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.15s ease;
+        display: flex;
+      }
+
+      .rule-row:hover .row-actions,
+      .row-actions.menu-open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .action-dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #000;
+        border: none;
+        cursor: pointer;
+      }
+
+      .action-dot:hover {
+        background: #5a5a5a;
+      }
+
+      .mini-menu {
+        position: absolute;
+        top: 28px;
+        right: 0;
+        background: #ececec;
+        border: 1px solid #c4c4c4;
+        border-radius: 4px;
+        display: none;
+        flex-direction: column;
+        min-width: 140px;
+        z-index: 10;
+      }
+
+      .mini-menu button {
+        border: none;
+        background: none;
+        padding: 10px 16px;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .mini-menu button:hover {
+        background: rgba(0, 0, 0, 0.05);
+      }
+
+      .history-row + .divider {
+        margin-top: 0;
+      }
+
+      .back-link {
+        margin-bottom: 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #333;
+        cursor: pointer;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <section class="view active" id="view-dashboard">
+        <h1>Выбор набора данных</h1>
+        <div class="cards-grid">
+          <div class="card">
+            <span>Название 1</span>
+            <button class="primary-btn" data-go="view-rules">Перейти</button>
+          </div>
+          <div class="card">
+            <span>Название 2</span>
+            <button class="primary-btn" data-go="view-rules">Перейти</button>
+          </div>
+          <div class="card">
+            <span>Название 3</span>
+            <button class="primary-btn" data-go="view-rules">Перейти</button>
+          </div>
+          <div class="card">
+            <span>Название 4</span>
+            <button class="primary-btn" data-go="view-rules">Перейти</button>
+          </div>
+          <div class="card">
+            <span>Название 5</span>
+            <button class="primary-btn" data-go="view-rules">Перейти</button>
+          </div>
+          <div class="card">
+            <span>Название 6</span>
+            <button class="primary-btn" data-go="view-rules">Перейти</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-rules">
+        <div class="back-link" data-go="view-dashboard">← Назад</div>
+        <div class="table-wrapper">
+          <div class="table-header">
+            <span>Имя</span>
+            <span>Источник данных</span>
+            <span></span>
+          </div>
+          <div class="divider"></div>
+
+          <div class="rule-row" data-rule="Mesto_jitelstva">
+            <span>Mesto_jitelstva</span>
+            <span>Greenplum</span>
+            <div class="row-actions">
+              <button class="action-dot" aria-label="Открыть меню"></button>
+              <div class="mini-menu">
+                <button data-menu="run">Запуск правила</button>
+                <button data-menu="stats">Статистика</button>
+              </div>
+            </div>
+          </div>
+          <div class="divider"></div>
+
+          <div class="rule-row" data-rule="Schet_pc">
+            <span>Schet_pc</span>
+            <span>DHW</span>
+            <div class="row-actions">
+              <button class="action-dot" aria-label="Открыть меню"></button>
+              <div class="mini-menu">
+                <button data-menu="run">Запуск правила</button>
+                <button data-menu="stats">Статистика</button>
+              </div>
+            </div>
+          </div>
+          <div class="divider"></div>
+
+          <div class="rule-row" data-rule="RNN_clienta">
+            <span>RNN_clienta</span>
+            <span>Greenplum</span>
+            <div class="row-actions">
+              <button class="action-dot" aria-label="Открыть меню"></button>
+              <div class="mini-menu">
+                <button data-menu="run">Запуск правила</button>
+                <button data-menu="stats">Статистика</button>
+              </div>
+            </div>
+          </div>
+          <div class="divider"></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-history">
+        <div class="back-link" data-go="view-rules">← Назад</div>
+        <div class="table-wrapper">
+          <div class="table-header">
+            <span>Наименование</span>
+            <span>Время запуска</span>
+            <span>Время завершения</span>
+            <span>Статус</span>
+            <span>Количество записей</span>
+          </div>
+          <div class="divider"></div>
+
+          <div class="history-row">
+            <span>Mesto_jitelstva</span>
+            <span>04.11.2025 20:54</span>
+            <span>04.11.2025 22:14</span>
+            <span>Выполнено</span>
+            <span>456</span>
+          </div>
+          <div class="divider"></div>
+
+          <div class="history-row">
+            <span>Mesto_jitelstva</span>
+            <span>03.11.2025 12:54</span>
+            <span>03.11.2025 13:14</span>
+            <span>Выполнено</span>
+            <span>456</span>
+          </div>
+          <div class="divider"></div>
+
+          <div class="history-row">
+            <span>Mesto_jitelstva</span>
+            <span>02.11.2025 20:54</span>
+            <span>02.11.2025 22:14</span>
+            <span>Выполнено</span>
+            <span>456</span>
+          </div>
+          <div class="divider"></div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const views = document.querySelectorAll(".view");
+      const menuState = { openMenu: null };
+
+      function showView(id) {
+        views.forEach((view) =>
+          view.id === id
+            ? view.classList.add("active")
+            : view.classList.remove("active")
+        );
+        closeMenus();
+      }
+
+      function closeMenus() {
+        document.querySelectorAll(".row-actions").forEach((wrap) => {
+          wrap.classList.remove("menu-open");
+        });
+        document
+          .querySelectorAll(".mini-menu")
+          .forEach((menu) => (menu.style.display = "none"));
+        menuState.openMenu = null;
+      }
+
+      document.querySelectorAll("[data-go]").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const target = btn.getAttribute("data-go");
+          if (target) {
+            showView(target);
+          }
+        });
+      });
+
+      document.querySelectorAll(".action-dot").forEach((dot) => {
+        dot.addEventListener("click", (event) => {
+          event.stopPropagation();
+          const wrapper = dot.parentElement;
+          const menu = dot.nextElementSibling;
+          const isOpen = menuState.openMenu === menu;
+          closeMenus();
+          if (!isOpen) {
+            wrapper.classList.add("menu-open");
+            menu.style.display = "flex";
+            menuState.openMenu = menu;
+          }
+        });
+      });
+
+      document.querySelectorAll(".mini-menu button").forEach((btn) => {
+        btn.addEventListener("click", (event) => {
+          event.stopPropagation();
+          const action = btn.dataset.menu;
+          closeMenus();
+          if (action === "stats") {
+            showView("view-history");
+          } else if (action === "run") {
+            alert("Правило запущено!");
+          }
+        });
+      });
+
+      document.addEventListener("click", (event) => {
+        if (!event.target.closest(".row-actions")) {
+          closeMenus();
+        }
+      });
+    </script>
+  </body>
+</html>
+
