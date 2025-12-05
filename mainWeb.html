@@ -88,7 +88,8 @@
         background: #fff;
         border-radius: 6px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        overflow: hidden;
+        /* даём выпасть всплывающему меню за пределы таблицы */
+        overflow: visible;
       }
 
       .table-header,
@@ -199,28 +200,28 @@
       <section class="view active" id="view-dashboard">
         <h1>Выбор набора данных</h1>
         <div class="cards-grid">
-          <div class="card">
-            <span>Название 1</span>
+          <div class="card" data-dataset="set1">
+            <span>Набор 1</span>
             <button class="primary-btn" data-go="view-rules">Перейти</button>
           </div>
-          <div class="card">
-            <span>Название 2</span>
+          <div class="card" data-dataset="set2">
+            <span>Набор 2</span>
             <button class="primary-btn" data-go="view-rules">Перейти</button>
           </div>
-          <div class="card">
-            <span>Название 3</span>
+          <div class="card" data-dataset="set3">
+            <span>Набор 3</span>
             <button class="primary-btn" data-go="view-rules">Перейти</button>
           </div>
-          <div class="card">
-            <span>Название 4</span>
+          <div class="card" data-dataset="set4">
+            <span>Набор 4</span>
             <button class="primary-btn" data-go="view-rules">Перейти</button>
           </div>
-          <div class="card">
-            <span>Название 5</span>
+          <div class="card" data-dataset="set5">
+            <span>Набор 5</span>
             <button class="primary-btn" data-go="view-rules">Перейти</button>
           </div>
-          <div class="card">
-            <span>Название 6</span>
+          <div class="card" data-dataset="set6">
+            <span>Набор 6</span>
             <button class="primary-btn" data-go="view-rules">Перейти</button>
           </div>
         </div>
@@ -235,45 +236,7 @@
             <span></span>
           </div>
           <div class="divider"></div>
-
-          <div class="rule-row" data-rule="Mesto_jitelstva">
-            <span>Mesto_jitelstva</span>
-            <span>Greenplum</span>
-            <div class="row-actions">
-              <button class="action-dot" aria-label="Открыть меню"></button>
-              <div class="mini-menu">
-                <button data-menu="run">Запуск правила</button>
-                <button data-menu="stats">Статистика</button>
-              </div>
-            </div>
-          </div>
-          <div class="divider"></div>
-
-          <div class="rule-row" data-rule="Schet_pc">
-            <span>Schet_pc</span>
-            <span>DHW</span>
-            <div class="row-actions">
-              <button class="action-dot" aria-label="Открыть меню"></button>
-              <div class="mini-menu">
-                <button data-menu="run">Запуск правила</button>
-                <button data-menu="stats">Статистика</button>
-              </div>
-            </div>
-          </div>
-          <div class="divider"></div>
-
-          <div class="rule-row" data-rule="RNN_clienta">
-            <span>RNN_clienta</span>
-            <span>Greenplum</span>
-            <div class="row-actions">
-              <button class="action-dot" aria-label="Открыть меню"></button>
-              <div class="mini-menu">
-                <button data-menu="run">Запуск правила</button>
-                <button data-menu="stats">Статистика</button>
-              </div>
-            </div>
-          </div>
-          <div class="divider"></div>
+          <div id="rules-container"></div>
         </div>
       </section>
 
@@ -288,33 +251,7 @@
             <span>Количество записей</span>
           </div>
           <div class="divider"></div>
-
-          <div class="history-row">
-            <span>Mesto_jitelstva</span>
-            <span>04.11.2025 20:54</span>
-            <span>04.11.2025 22:14</span>
-            <span>Выполнено</span>
-            <span>456</span>
-          </div>
-          <div class="divider"></div>
-
-          <div class="history-row">
-            <span>Mesto_jitelstva</span>
-            <span>03.11.2025 12:54</span>
-            <span>03.11.2025 13:14</span>
-            <span>Выполнено</span>
-            <span>456</span>
-          </div>
-          <div class="divider"></div>
-
-          <div class="history-row">
-            <span>Mesto_jitelstva</span>
-            <span>02.11.2025 20:54</span>
-            <span>02.11.2025 22:14</span>
-            <span>Выполнено</span>
-            <span>456</span>
-          </div>
-          <div class="divider"></div>
+          <div id="history-container"></div>
         </div>
       </section>
     </div>
@@ -322,6 +259,163 @@
     <script>
       const views = document.querySelectorAll(".view");
       const menuState = { openMenu: null };
+      let currentDataset = null;
+
+      // данные для каждого из 6 блоков
+      const DATASETS = {
+        set1: {
+          name: "Mesto_jitelstva",
+          rules: [
+            { name: "Mesto_jitelstva", source: "Greenplum" },
+            { name: "Mesto_jitelstva_daily", source: "Greenplum" },
+          ],
+          history: [
+            {
+              name: "Mesto_jitelstva",
+              start: "04.11.2025 20:54",
+              end: "04.11.2025 22:14",
+              status: "Выполнено",
+              count: 456,
+            },
+            {
+              name: "Mesto_jitelstva",
+              start: "03.11.2025 12:54",
+              end: "03.11.2025 13:14",
+              status: "Выполнено",
+              count: 372,
+            },
+          ],
+        },
+        set2: {
+          name: "Schet_pc",
+          rules: [
+            { name: "Schet_pc", source: "DHW" },
+            { name: "Schet_pc_archive", source: "DHW" },
+          ],
+          history: [
+            {
+              name: "Schet_pc",
+              start: "01.11.2025 09:10",
+              end: "01.11.2025 09:40",
+              status: "Выполнено",
+              count: 220,
+            },
+            {
+              name: "Schet_pc",
+              start: "31.10.2025 18:10",
+              end: "31.10.2025 18:55",
+              status: "Ошибка",
+              count: 0,
+            },
+          ],
+        },
+        set3: {
+          name: "RNN_clienta",
+          rules: [{ name: "RNN_clienta", source: "Greenplum" }],
+          history: [
+            {
+              name: "RNN_clienta",
+              start: "05.11.2025 10:00",
+              end: "05.11.2025 10:30",
+              status: "Выполнено",
+              count: 128,
+            },
+          ],
+        },
+        set4: {
+          name: "Clients_daily",
+          rules: [{ name: "Clients_daily", source: "Greenplum" }],
+          history: [
+            {
+              name: "Clients_daily",
+              start: "04.11.2025 02:00",
+              end: "04.11.2025 02:35",
+              status: "Выполнено",
+              count: 982,
+            },
+          ],
+        },
+        set5: {
+          name: "Payments_raw",
+          rules: [{ name: "Payments_raw", source: "DHW" }],
+          history: [
+            {
+              name: "Payments_raw",
+              start: "03.11.2025 14:00",
+              end: "03.11.2025 15:20",
+              status: "В обработке",
+              count: 1245,
+            },
+          ],
+        },
+        set6: {
+          name: "Archive_2024",
+          rules: [{ name: "Archive_2024", source: "Greenplum" }],
+          history: [
+            {
+              name: "Archive_2024",
+              start: "01.11.2025 00:10",
+              end: "01.11.2025 03:40",
+              status: "Готов",
+              count: 68320,
+            },
+          ],
+        },
+      };
+
+      function renderRulesAndHistory() {
+        const data = DATASETS[currentDataset];
+        const rulesContainer = document.getElementById("rules-container");
+        const historyContainer = document.getElementById("history-container");
+
+        if (!data || !rulesContainer || !historyContainer) return;
+
+        // правила
+        rulesContainer.innerHTML = "";
+        data.rules.forEach((r) => {
+          const row = document.createElement("div");
+          row.className = "rule-row";
+          row.dataset.rule = r.name;
+          row.innerHTML = `
+            <span>${r.name}</span>
+            <span>${r.source}</span>
+            <div class="row-actions">
+              <button class="action-dot" aria-label="Открыть меню"></button>
+              <div class="mini-menu">
+                <button data-menu="run">Запуск правила</button>
+                <button data-menu="stats">Статистика</button>
+              </div>
+            </div>
+          `;
+
+          const divider = document.createElement("div");
+          divider.className = "divider";
+
+          rulesContainer.appendChild(row);
+          rulesContainer.appendChild(divider);
+        });
+
+        // история
+        historyContainer.innerHTML = "";
+        data.history.forEach((h) => {
+          const row = document.createElement("div");
+          row.className = "history-row";
+          row.innerHTML = `
+            <span>${h.name}</span>
+            <span>${h.start}</span>
+            <span>${h.end}</span>
+            <span>${h.status}</span>
+            <span>${h.count}</span>
+          `;
+          const divider = document.createElement("div");
+          divider.className = "divider";
+
+          historyContainer.appendChild(row);
+          historyContainer.appendChild(divider);
+        });
+
+        attachRowActionsHandlers();
+      }
 
       function showView(id) {
         views.forEach((view) =>
@@ -342,39 +436,46 @@
         menuState.openMenu = null;
       }
 
+      function attachRowActionsHandlers() {
+        document.querySelectorAll(".action-dot").forEach((dot) => {
+          dot.addEventListener("click", (event) => {
+            event.stopPropagation();
+            const wrapper = dot.parentElement;
+            const menu = dot.nextElementSibling;
+            const isOpen = menuState.openMenu === menu;
+            closeMenus();
+            if (!isOpen) {
+              wrapper.classList.add("menu-open");
+              menu.style.display = "flex";
+              menuState.openMenu = menu;
+            }
+          });
+        });
+
+        document.querySelectorAll(".mini-menu button").forEach((btn) => {
+          btn.addEventListener("click", (event) => {
+            event.stopPropagation();
+            const action = btn.dataset.menu;
+            closeMenus();
+            if (action === "stats") {
+              showView("view-history");
+            } else if (action === "run") {
+              alert("Правило запущено!");
+            }
+          });
+        });
+      }
+
       document.querySelectorAll("[data-go]").forEach((btn) => {
         btn.addEventListener("click", (e) => {
           const target = btn.getAttribute("data-go");
+          const card = btn.closest(".card");
+          if (card && card.dataset.dataset) {
+            currentDataset = card.dataset.dataset;
+            renderRulesAndHistory();
+          }
           if (target) {
             showView(target);
-          }
-        });
-      });
-
-      document.querySelectorAll(".action-dot").forEach((dot) => {
-        dot.addEventListener("click", (event) => {
-          event.stopPropagation();
-          const wrapper = dot.parentElement;
-          const menu = dot.nextElementSibling;
-          const isOpen = menuState.openMenu === menu;
-          closeMenus();
-          if (!isOpen) {
-            wrapper.classList.add("menu-open");
-            menu.style.display = "flex";
-            menuState.openMenu = menu;
-          }
-        });
-      });
-
-      document.querySelectorAll(".mini-menu button").forEach((btn) => {
-        btn.addEventListener("click", (event) => {
-          event.stopPropagation();
-          const action = btn.dataset.menu;
-          closeMenus();
-          if (action === "stats") {
-            showView("view-history");
-          } else if (action === "run") {
-            alert("Правило запущено!");
           }
         });
       });

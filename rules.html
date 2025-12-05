@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>DataLake Robot – Правила</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <a class="back-link" href="index.html">← Назад</a>
+
+      <div class="table-wrapper">
+        <div class="table-header">
+          <span>Имя</span>
+          <span>Источник данных</span>
+          <span style="text-align: right">
+            <button class="primary-btn" id="run-parser-btn" type="button">
+              Собрать статистику
+            </button>
+          </span>
+        </div>
+        <div class="divider"></div>
+        <div id="rules-container"></div>
+      </div>
+    </div>
+
+    <script>
+      const menuState = { openMenu: null };
+      let currentDataset = null;
+
+      const DATASETS = {
+        set1: {
+          rules: [
+            { name: "Mesto_jitelstva", source: "Greenplum" },
+            { name: "Mesto_jitelstva_daily", source: "Greenplum" },
+            { name: "Mesto_jitelstva_monthly", source: "Greenplum" },
+          ],
+        },
+        set2: {
+          rules: [
+            { name: "Schet_pc", source: "DHW" },
+            { name: "Schet_pc_archive", source: "DHW" },
+            { name: "Schet_pc_control", source: "DHW" },
+          ],
+        },
+        set3: {
+          rules: [
+            { name: "RNN_clienta", source: "Greenplum" },
+            { name: "RNN_clienta_test", source: "Greenplum" },
+            { name: "RNN_clienta_archive", source: "Greenplum" },
+          ],
+        },
+        set4: {
+          rules: [
+            { name: "Clients_daily", source: "Greenplum" },
+            { name: "Clients_weekly", source: "Greenplum" },
+            { name: "Clients_monthly", source: "Greenplum" },
+          ],
+        },
+        set5: {
+          rules: [
+            { name: "Payments_raw", source: "DHW" },
+            { name: "Payments_cleared", source: "DHW" },
+            { name: "Payments_chargeback", source: "DHW" },
+          ],
+        },
+        set6: {
+          rules: [
+            { name: "Archive_2024", source: "Greenplum" },
+            { name: "Archive_2023", source: "Greenplum" },
+            { name: "Archive_2022", source: "Greenplum" },
+          ],
+        },
+      };
+
+      function getDatasetFromQuery() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("dataset") || "set1";
+      }
+
+      function closeMenus() {
+        document.querySelectorAll(".row-actions").forEach((wrap) => {
+          wrap.classList.remove("menu-open");
+        });
+        document
+          .querySelectorAll(".mini-menu")
+          .forEach((menu) => (menu.style.display = "none"));
+        menuState.openMenu = null;
+      }
+
+      function attachRowActionsHandlers() {
+        document.querySelectorAll(".action-dot").forEach((dot) => {
+          dot.addEventListener("click", (event) => {
+            event.stopPropagation();
+            const wrapper = dot.parentElement;
+            const menu = dot.nextElementSibling;
+            const isOpen = menuState.openMenu === menu;
+            closeMenus();
+            if (!isOpen) {
+              wrapper.classList.add("menu-open");
+              menu.style.display = "flex";
+              menuState.openMenu = menu;
+            }
+          });
+        });
+
+        document.querySelectorAll(".mini-menu button").forEach((btn) => {
+          btn.addEventListener("click", (event) => {
+            event.stopPropagation();
+            const action = btn.dataset.menu;
+            const row = btn.closest(".rule-row");
+            const ruleName = row ? row.dataset.rule : "";
+            closeMenus();
+            if (action === "stats") {
+              const url = new URL("history.html", window.location.href);
+              url.searchParams.set("dataset", currentDataset);
+              if (ruleName) {
+                url.searchParams.set("rule", ruleName);
+              }
+              window.location.href = url.toString();
+            } else if (action === "run") {
+              alert("Правило запущено!");
+            }
+          });
+        });
+
+        document.addEventListener("click", (event) => {
+          if (!event.target.closest(".row-actions")) {
+            closeMenus();
+          }
+        });
+      }
+
+      function renderRules() {
+        const data = DATASETS[currentDataset];
+        const rulesContainer = document.getElementById("rules-container");
+        if (!data || !rulesContainer) return;
+
+        rulesContainer.innerHTML = "";
+        data.rules.forEach((r) => {
+          const row = document.createElement("div");
+          row.className = "rule-row";
+          row.dataset.rule = r.name;
+          row.innerHTML = `
+            <span>${r.name}</span>
+            <span>${r.source}</span>
+            <div class="row-actions">
+              <button class="action-dot" aria-label="Открыть меню"></button>
+              <div class="mini-menu">
+                <button data-menu="run">Запуск правила</button>
+                <button data-menu="stats">Статистика</button>
+              </div>
+            </div>
+          `;
+
+          const divider = document.createElement("div");
+          divider.className = "divider";
+
+          rulesContainer.appendChild(row);
+          rulesContainer.appendChild(divider);
+        });
+
+        attachRowActionsHandlers();
+      }
+
+      currentDataset = getDatasetFromQuery();
+      renderRules();
+
+      // Кнопка запуска Python-скрипта: в браузере нельзя запустить main.py напрямую,
+      // поэтому просто подсказываем пользователю КОНКРЕТНУЮ команду
+      // с учётом выбранного набора (set1, set2, ...).
+      const runBtn = document.getElementById("run-parser-btn");
+      runBtn.addEventListener("click", () => {
+        const dataset = currentDataset || getDatasetFromQuery();
+        // Получаем текущий URL и заменяем имя файла на history.html
+        const currentUrl = window.location.href;
+        const historyUrl = currentUrl.replace(/[^/]+\.html$/, "history.html");
+        alert(
+          "Чтобы собрать статистику в Excel, запустите команду в терминале:\n\n" +
+            `python main.py ${dataset} "${historyUrl}"\n\n` +
+            `После выполнения файл history_stats_${dataset}.xlsx появится рядом с main.py.`
+        );
+      });
+    </script>
+  </body>
+</html>
+
+

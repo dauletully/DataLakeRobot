@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>DataLake Robot – История</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <a class="back-link" id="back-link" href="rules.html">← Назад</a>
+
+      <div class="table-wrapper">
+        <div class="table-header">
+          <span>Наименование</span>
+          <span>Время запуска</span>
+          <span>Время завершения</span>
+          <span>Статус</span>
+          <span>Количество записей</span>
+        </div>
+        <div class="divider"></div>
+        <div id="history-container"></div>
+      </div>
+    </div>
+
+    <script>
+      const DATASETS_HISTORY = {
+        set1: [
+          // Mesto_jitelstva — минимум 3 записи
+          {
+            name: "Mesto_jitelstva",
+            start: "04.11.2025 20:54",
+            end: "04.11.2025 22:14",
+            status: "Выполнено",
+            count: 456,
+          },
+          {
+            name: "Mesto_jitelstva",
+            start: "03.11.2025 12:54",
+            end: "03.11.2025 13:14",
+            status: "Выполнено",
+            count: 372,
+          },
+          {
+            name: "Mesto_jitelstva",
+            start: "02.11.2025 08:10",
+            end: "02.11.2025 08:40",
+            status: "Ошибка",
+            count: 120,
+          },
+          // Mesto_jitelstva_daily
+          {
+            name: "Mesto_jitelstva_daily",
+            start: "04.11.2025 06:00",
+            end: "04.11.2025 06:20",
+            status: "Выполнено",
+            count: 210,
+          },
+          {
+            name: "Mesto_jitelstva_daily",
+            start: "03.11.2025 06:00",
+            end: "03.11.2025 06:18",
+            status: "Выполнено",
+            count: 205,
+          },
+          {
+            name: "Mesto_jitelstva_daily",
+            start: "02.11.2025 06:00",
+            end: "02.11.2025 06:25",
+            status: "Выполнено",
+            count: 198,
+          },
+          // Mesto_jitelstva_monthly
+          {
+            name: "Mesto_jitelstva_monthly",
+            start: "01.11.2025 01:00",
+            end: "01.11.2025 01:40",
+            status: "Выполнено",
+            count: 5200,
+          },
+          {
+            name: "Mesto_jitelstva_monthly",
+            start: "01.10.2025 01:10",
+            end: "01.10.2025 01:55",
+            status: "Выполнено",
+            count: 4980,
+          },
+          {
+            name: "Mesto_jitelstva_monthly",
+            start: "01.09.2025 01:05",
+            end: "01.09.2025 01:50",
+            status: "Выполнено",
+            count: 5102,
+          },
+        ],
+        set2: [
+          // Schet_pc
+          {
+            name: "Schet_pc",
+            start: "01.11.2025 09:10",
+            end: "01.11.2025 09:40",
+            status: "Выполнено",
+            count: 220,
+          },
+          {
+            name: "Schet_pc",
+            start: "31.10.2025 18:10",
+            end: "31.10.2025 18:55",
+            status: "Ошибка",
+            count: 0,
+          },
+          {
+            name: "Schet_pc",
+            start: "30.10.2025 09:05",
+            end: "30.10.2025 09:32",
+            status: "Выполнено",
+            count: 198,
+          },
+          // Schet_pc_archive
+          {
+            name: "Schet_pc_archive",
+            start: "01.11.2025 23:00",
+            end: "01.11.2025 23:40",
+            status: "Выполнено",
+            count: 1020,
+          },
+          {
+            name: "Schet_pc_archive",
+            start: "01.10.2025 23:15",
+            end: "01.10.2025 23:55",
+            status: "Выполнено",
+            count: 980,
+          },
+          {
+            name: "Schet_pc_archive",
+            start: "01.09.2025 23:05",
+            end: "01.09.2025 23:50",
+            status: "Выполнено",
+            count: 950,
+          },
+          // Schet_pc_control
+          {
+            name: "Schet_pc_control",
+            start: "04.11.2025 11:00",
+            end: "04.11.2025 11:20",
+            status: "Выполнено",
+            count: 50,
+          },
+          {
+            name: "Schet_pc_control",
+            start: "03.11.2025 11:05",
+            end: "03.11.2025 11:30",
+            status: "Выполнено",
+            count: 48,
+          },
+          {
+            name: "Schet_pc_control",
+            start: "02.11.2025 11:10",
+            end: "02.11.2025 11:35",
+            status: "Ошибка",
+            count: 10,
+          },
+        ],
+        set3: [
+          // RNN_clienta
+          {
+            name: "RNN_clienta",
+            start: "05.11.2025 10:00",
+            end: "05.11.2025 10:30",
+            status: "Выполнено",
+            count: 128,
+          },
+          {
+            name: "RNN_clienta",
+            start: "04.11.2025 10:05",
+            end: "04.11.2025 10:28",
+            status: "Выполнено",
+            count: 120,
+          },
+          {
+            name: "RNN_clienta",
+            start: "03.11.2025 10:02",
+            end: "03.11.2025 10:25",
+            status: "Ошибка",
+            count: 30,
+          },
+          // RNN_clienta_test
+          {
+            name: "RNN_clienta_test",
+            start: "05.11.2025 08:00",
+            end: "05.11.2025 08:10",
+            status: "Выполнено",
+            count: 30,
+          },
+          {
+            name: "RNN_clienta_test",
+            start: "04.11.2025 08:00",
+            end: "04.11.2025 08:12",
+            status: "Выполнено",
+            count: 32,
+          },
+          {
+            name: "RNN_clienta_test",
+            start: "03.11.2025 08:00",
+            end: "03.11.2025 08:09",
+            status: "Ошибка",
+            count: 5,
+          },
+          // RNN_clienta_archive
+          {
+            name: "RNN_clienta_archive",
+            start: "01.11.2025 03:00",
+            end: "01.11.2025 03:40",
+            status: "Выполнено",
+            count: 500,
+          },
+          {
+            name: "RNN_clienta_archive",
+            start: "01.10.2025 03:05",
+            end: "01.10.2025 03:50",
+            status: "Выполнено",
+            count: 480,
+          },
+          {
+            name: "RNN_clienta_archive",
+            start: "01.09.2025 03:10",
+            end: "01.09.2025 03:55",
+            status: "Выполнено",
+            count: 470,
+          },
+        ],
+        set4: [
+          // Clients_daily
+          {
+            name: "Clients_daily",
+            start: "04.11.2025 02:00",
+            end: "04.11.2025 02:35",
+            status: "Выполнено",
+            count: 982,
+          },
+          {
+            name: "Clients_daily",
+            start: "03.11.2025 02:00",
+            end: "03.11.2025 02:32",
+            status: "Выполнено",
+            count: 960,
+          },
+          {
+            name: "Clients_daily",
+            start: "02.11.2025 02:00",
+            end: "02.11.2025 02:30",
+            status: "Ошибка",
+            count: 100,
+          },
+          // Clients_weekly
+          {
+            name: "Clients_weekly",
+            start: "02.11.2025 04:00",
+            end: "02.11.2025 04:45",
+            status: "Выполнено",
+            count: 5400,
+          },
+          {
+            name: "Clients_weekly",
+            start: "26.10.2025 04:05",
+            end: "26.10.2025 04:50",
+            status: "Выполнено",
+            count: 5300,
+          },
+          {
+            name: "Clients_weekly",
+            start: "19.10.2025 04:10",
+            end: "19.10.2025 04:55",
+            status: "Выполнено",
+            count: 5250,
+          },
+          // Clients_monthly
+          {
+            name: "Clients_monthly",
+            start: "01.11.2025 05:00",
+            end: "01.11.2025 05:40",
+            status: "Выполнено",
+            count: 21000,
+          },
+          {
+            name: "Clients_monthly",
+            start: "01.10.2025 05:05",
+            end: "01.10.2025 05:50",
+            status: "Выполнено",
+            count: 20500,
+          },
+          {
+            name: "Clients_monthly",
+            start: "01.09.2025 05:10",
+            end: "01.09.2025 05:55",
+            status: "Выполнено",
+            count: 20250,
+          },
+        ],
+        set5: [
+          // Payments_raw
+          {
+            name: "Payments_raw",
+            start: "03.11.2025 14:00",
+            end: "03.11.2025 15:20",
+            status: "В обработке",
+            count: 1245,
+          },
+          {
+            name: "Payments_raw",
+            start: "02.11.2025 14:05",
+            end: "02.11.2025 15:10",
+            status: "Выполнено",
+            count: 1180,
+          },
+          {
+            name: "Payments_raw",
+            start: "01.11.2025 14:10",
+            end: "01.11.2025 15:05",
+            status: "Ошибка",
+            count: 300,
+          },
+          // Payments_cleared
+          {
+            name: "Payments_cleared",
+            start: "03.11.2025 16:00",
+            end: "03.11.2025 16:40",
+            status: "Выполнено",
+            count: 900,
+          },
+          {
+            name: "Payments_cleared",
+            start: "02.11.2025 16:05",
+            end: "02.11.2025 16:35",
+            status: "Выполнено",
+            count: 880,
+          },
+          {
+            name: "Payments_cleared",
+            start: "01.11.2025 16:10",
+            end: "01.11.2025 16:45",
+            status: "Выполнено",
+            count: 870,
+          },
+          // Payments_chargeback
+          {
+            name: "Payments_chargeback",
+            start: "03.11.2025 18:00",
+            end: "03.11.2025 18:20",
+            status: "Выполнено",
+            count: 45,
+          },
+          {
+            name: "Payments_chargeback",
+            start: "02.11.2025 18:05",
+            end: "02.11.2025 18:25",
+            status: "Выполнено",
+            count: 40,
+          },
+          {
+            name: "Payments_chargeback",
+            start: "01.11.2025 18:10",
+            end: "01.11.2025 18:30",
+            status: "Ошибка",
+            count: 10,
+          },
+        ],
+        set6: [
+          // Archive_2024
+          {
+            name: "Archive_2024",
+            start: "01.11.2025 00:10",
+            end: "01.11.2025 03:40",
+            status: "Готов",
+            count: 68320,
+          },
+          {
+            name: "Archive_2024",
+            start: "01.10.2025 00:15",
+            end: "01.10.2025 03:35",
+            status: "Готов",
+            count: 65010,
+          },
+          {
+            name: "Archive_2024",
+            start: "01.09.2025 00:20",
+            end: "01.09.2025 03:30",
+            status: "Готов",
+            count: 63000,
+          },
+          // Archive_2023
+          {
+            name: "Archive_2023",
+            start: "01.11.2024 00:10",
+            end: "01.11.2024 03:40",
+            status: "Готов",
+            count: 70200,
+          },
+          {
+            name: "Archive_2023",
+            start: "01.10.2024 00:15",
+            end: "01.10.2024 03:35",
+            status: "Готов",
+            count: 69000,
+          },
+          {
+            name: "Archive_2023",
+            start: "01.09.2024 00:20",
+            end: "01.09.2024 03:30",
+            status: "Готов",
+            count: 68000,
+          },
+          // Archive_2022
+          {
+            name: "Archive_2022",
+            start: "01.11.2023 00:10",
+            end: "01.11.2023 03:40",
+            status: "Готов",
+            count: 72000,
+          },
+          {
+            name: "Archive_2022",
+            start: "01.10.2023 00:15",
+            end: "01.10.2023 03:35",
+            status: "Готов",
+            count: 71000,
+          },
+          {
+            name: "Archive_2022",
+            start: "01.09.2023 00:20",
+            end: "01.09.2023 03:30",
+            status: "Готов",
+            count: 70500,
+          },
+        ],
+      };
+
+      function getDatasetFromQuery() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("dataset") || "set1";
+      }
+
+      function getRuleFromQuery() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("rule") || "";
+      }
+
+      function renderHistory(datasetKey, ruleName) {
+        const history = DATASETS_HISTORY[datasetKey] || [];
+        const container = document.getElementById("history-container");
+        container.innerHTML = "";
+
+        history.forEach((h) => {
+          if (ruleName && h.name !== ruleName) {
+            return; // показываем только выбранное правило
+          }
+          const row = document.createElement("div");
+          row.className = "history-row";
+          row.innerHTML = `
+            <span>${h.name}</span>
+            <span>${h.start}</span>
+            <span>${h.end}</span>
+            <span>${h.status}</span>
+            <span>${h.count}</span>
+          `;
+          const divider = document.createElement("div");
+          divider.className = "divider";
+          container.appendChild(row);
+          container.appendChild(divider);
+        });
+      }
+
+      const dataset = getDatasetFromQuery();
+      const ruleName = getRuleFromQuery();
+      // обновляем ссылку "Назад", чтобы вернуться к тем же правилам
+      const backLink = document.getElementById("back-link");
+      backLink.href = `rules.html?dataset=${dataset}`;
+
+      renderHistory(dataset, ruleName);
+    </script>
+  </body>
+</html>
+
+
